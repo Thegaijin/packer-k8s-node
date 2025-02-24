@@ -1,0 +1,53 @@
+- name: 'Build k8s node image'
+  hosts: all
+  become: true
+  vars_files:
+    - packages.yaml
+
+  tasks:
+  - name: Update the apt repository
+    apt:
+      update_cache: yes
+
+  - name: Install the packages
+    apt:
+      name: "{{ packages }}"
+      state: latest
+
+  # - name: Execute shell comm
+  #   ansible.builtin.shell: |
+  #     cmd: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  #     echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+  # - name: Add Kubernetes apt-key
+  #   get_url:
+  #     url: https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key
+  #     dest: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  #     mode: '0644'
+  #     force: true
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu focal stable
+      state: present
+
+  - name: Get Kubernetes package key
+    shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    args:
+      creates: '/etc/apt/keyrings/kubernetes-apt-keyring.gpg'
+
+
+  - name: Add Kubernetes APT repository
+    apt_repository:
+      repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /"
+      state: present
+      update_cache: yes
+
+  - name: Install the k8s packages
+    apt:
+      name: "{{ packages_k8s }}"
+      state: latest

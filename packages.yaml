@@ -1,0 +1,12 @@
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gpg
+
+packages_k8s:
+  - kubelet
+  - kubeadm
+  - kubectl
+  - kubernetes-cni
+  - docker-ce
